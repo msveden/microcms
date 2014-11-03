@@ -5,10 +5,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-var content = require('./routes/content');
-
 var app = express();
 
 // view engine setup
@@ -22,9 +18,8 @@ app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
-app.use('/content', content);
+// Bootstrap routes
+require('./config/routes')(app);
 
 /// catch 404 and forwarding to error handler
 app.use(function(req, res, next) {
@@ -57,5 +52,16 @@ app.use(function(err, req, res, next) {
     });
 });
 
+var mongojs = require('mongojs');
+var dbConfig = require('./config/db_config');
+console.log('dbConfig=' + dbConfig.connectionString);
+var db = mongojs(dbConfig.connectionString);
+var collection = db.collection('ItemDraft');
+
+// find everything
+collection.find(function(err, docs) {
+    console.log('find callback');
+    console.log(docs);
+});
 
 module.exports = app;
